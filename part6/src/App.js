@@ -2,27 +2,27 @@ import React, { useState, useEffect } from "react";
 import Filter from "./components/Filter";
 import Person from "./components/Person";
 import PersonForm from "./components/PersonForm";
-import axios from "axios";
+import personService from "./services/persons";
 
 const App = () => {
-  const hook = () => {
-    console.log("effect");
-    axios.get("http://localhost:3001/persons").then((response) => {
-      console.log("promise fulfilled");
-      setPersons(response.data);
+  useEffect(() => {
+    personService.getAll().then((initialNotes) => {
+      setPersons(initialNotes);
     });
-  };
-
-  useEffect(hook, []);
+  }, []);
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [filter, setNewFilter] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const personsToShow = () => {
     if (filter) {
-      return persons.filter((a) =>
-        a.name.toUpperCase().includes(filter.toUpperCase())
-      );
+      return persons.filter((a) => {
+        if (a.name) {
+          return a.name.toUpperCase().includes(filter.toUpperCase());
+        } else {
+          return false;
+        }
+      });
     } else {
       return persons;
     }
@@ -40,10 +40,11 @@ const App = () => {
       name: newName,
       number: newNumber,
     };
-
-    setPersons(persons.concat(personObject));
-    setNewName("");
-    setNewNumber("");
+    personService.create(personObject).then((returnedNote) => {
+      setPersons(persons.concat(personObject));
+      setNewName("");
+      setNewNumber("");
+    });
   };
 
   const handleNameChange = (event) => {
