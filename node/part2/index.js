@@ -1,5 +1,7 @@
 const express = require("express");
 const morgan = require("morgan");
+require("dotenv").config();
+const Person = require("./models/person");
 
 const cors = require("cors");
 
@@ -20,7 +22,9 @@ app.use(
 );
 
 app.get("/api/persons", (req, res) => {
-  res.json(persons);
+  Person.find({}).then((persons) => {
+    res.json(persons);
+  });
 });
 
 app.get("/info", (req, res) => {
@@ -29,14 +33,13 @@ app.get("/info", (req, res) => {
 });
 
 app.get("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const person = persons.find((person) => person.id === id);
-
-  if (person) {
-    response.json(person);
-  } else {
-    response.status(404).end();
-  }
+  Person.findById(request.params.id).then((person) => {
+    if (person) {
+      response.json(person);
+    } else {
+      response.status(404).end();
+    }
+  });
 });
 
 const generateId = () => {
@@ -52,22 +55,17 @@ app.post("/api/persons", (request, response) => {
       error: "content missing",
     });
   }
-  if (persons.find((p) => p.name === body.name)) {
-    return response.status(400).json({
-      error: "is already added to db",
-    });
-  }
-  const person = {
+
+  const person = new Person({
     name: body.name,
     number: body.number,
     date: new Date(),
-    id: generateId(),
-  };
-
-  persons = persons.concat(person);
-
-  response.json(person);
+  });
+  person.save().then((savedNote) => {
+    response.json(savedNote);
+  });
 });
+
 app.delete("/api/persons/:id", (request, response) => {
   const id = Number(request.params.id);
   persons = persons.filter((person) => person.id !== id);
