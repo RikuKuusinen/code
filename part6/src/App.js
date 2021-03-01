@@ -5,46 +5,66 @@ import PersonForm from "./components/PersonForm";
 import personService from "./services/persons";
 
 const App = () => {
+  const [persons, setPersons] = useState([]);
+  const [newName, setNewName] = useState("");
+  const [filter, setNewFilter] = useState("");
+  const [newNumber, setNewNumber] = useState("");
   useEffect(() => {
     personService.getAll().then((initialNotes) => {
       setPersons(initialNotes);
     });
   }, []);
-  const [persons, setPersons] = useState([]);
-  const [newName, setNewName] = useState("");
-  const [filter, setNewFilter] = useState("");
-  const [newNumber, setNewNumber] = useState("");
   const personsToShow = () => {
     if (filter) {
       return persons.filter((a) => {
         if (a.name) {
           return a.name.toUpperCase().includes(filter.toUpperCase());
-        } else {
-          return false;
         }
+        return false;
       });
-    } else {
-      return persons;
     }
+    return persons;
   };
 
   const addPerson = (event) => {
+    console.log(event);
     event.preventDefault();
-
-    if (persons.find((p) => p.name === newName)) {
-      alert(`${newName} is already added to phonebook`);
-      return;
-    }
-
     const personObject = {
       name: newName,
       number: newNumber,
     };
-    personService.create(personObject).then((returnedNote) => {
-      setPersons(persons.concat(personObject));
-      setNewName("");
-      setNewNumber("");
-    });
+
+    if (persons.find((p) => p.name === newName)) {
+      const pers = persons.find((p) => p.name === newName);
+      // eslint-disable-next-line no-alert
+      const test = `${newName} is already added to phonebook. Update phone number?`;
+
+      // eslint-disable-next-line no-alert
+      const xd = window.confirm(test);
+      if (xd) {
+        personService
+          .update(pers.id, personObject)
+          .then((returnedNote) => {
+            pers.number = returnedNote.number;
+            setNewName("");
+            setNewNumber("");
+          })
+          .catch((error) => {
+            console.log("virhe", error);
+          });
+      }
+    } else {
+      personService
+        .create(personObject)
+        .then(() => {
+          setPersons(persons.concat(personObject));
+          setNewName("");
+          setNewNumber("");
+        })
+        .catch((error) => {
+          console.log("virhe", error);
+        });
+    }
   };
 
   const handleNameChange = (event) => {
@@ -65,7 +85,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Filter filter={filter} filterChange={filterChange}></Filter>
+      <Filter filter={filter} filterChange={filterChange} />
       <h3>Lisää dude</h3>
       <PersonForm
         addPerson={addPerson}
@@ -73,7 +93,7 @@ const App = () => {
         handleNameChange={handleNameChange}
         newNumber={newNumber}
         handleNumberChange={handleNumberChange}
-      ></PersonForm>
+      />
       <h2>Numbers</h2>
       <ul>
         {personsToShow().map((person) => {
