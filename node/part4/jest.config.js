@@ -1,6 +1,8 @@
 // jest.config.js
 // Sync object
 const jestConfig = {
+  testEnvironment: "node",
+
   verbose: true,
   testURL: "http://localhost/",
   transform: {

@@ -1,7 +1,9 @@
-PUT http://localhost:3001/api/persons/60378fa815e0df14ac1f8640 HTTP/1.1
+PUT http://localhost:3003/api/blogs/603ca5399dc9f8114099c0a4 HTTP/1.1
 content-type: application/json
 
 {
-    "name": "Sart asdsadada",
-    "number": "040-123456"
+   "title": "test 22222",
+  "author": "PARAS kirjoittaja",
+  "url": "sinnetännne",
+  "likes": "999"
 }
